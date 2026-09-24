@@ -1,0 +1,212 @@
+"""
+lythosmsew.web.server — the local HTTP server that serves the interface.
+
+The interface runs as a small HTTP server on the machine it was started on and
+is driven from the browser. That choice makes the program usable over a remote
+session or inside a container — no display for a desktop toolkit to find — and
+brings in nothing beyond the standard library.
+
+The server stays on the loopback address unless the host is changed on purpose.
+The height study runs in a thread, so the interface keeps answering while a
+wall is designed at every height of the range.
+"""
+
+from __future__ import annotations
+
+import json
+import math
+import os
+import tempfile
+import threading
+import webbrowser
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlparse
+
+from .. import APP_NAME, __version__
+from .session import Session
+from .strings import shell_strings
+
+STATIC = os.path.join(os.path.dirname(__file__), "static")
+
+#: A mark for the browser tab: a wall of facing panels holding back layered
+#: fill, the reinforcement running into it
+_FAVICON = (
+    b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+    b'<rect width="32" height="32" rx="7" fill="#F5F4ED"/>'
+    b'<path d="M3 26h26v3H3z" fill="#A7B8A0"/>'
+    b'<path d="M9 5h20v21H9z" fill="#E3C98F"/>'
+    b'<path d="M6 5h3v21H6z" fill="#8A8680"/>'
+    b'<path d="M9 9h16M9 13.5h16M9 18h16M9 22.5h16" stroke="#C6613F" stroke-width="1.8" '
+    b'stroke-linecap="round"/></svg>'
+)
+
+#: Content types of the report and export downloads
+REPORT_TYPES = {"pdf": "application/pdf",
+                "html": "text/html; charset=utf-8",
+                "docx": "application/vnd.openxmlformats-officedocument."
+                        "wordprocessingml.document"}
+EXPORT_TYPES = {"csv": "text/csv; charset=utf-8",
+                "xlsx": "application/vnd.openxmlformats-officedocument."
+                        "spreadsheetml.sheet"}
+
+SESSION = Session()
+
+
+class Handler(BaseHTTPRequestHandler):
+    server_version = "LythosMSEW"
+
+    def log_message(self, fmt, *args):        # leave the console to the analysis
+        pass
+
+    # ---------------------------------------------------------------- helpers
+    def _send(self, code: int, body: bytes, content_type: str, extra: dict = None) -> None:
+        self.send_response(code)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        for key, value in (extra or {}).items():
+            self.send_header(key, value)
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _json(self, payload, code: int = 200) -> None:
+        # JSON has no Infinity or NaN: an unbounded or missing number travels as null
+        self._send(code, json.dumps(_clean(payload), default=float).encode("utf-8"),
+                   "application/json; charset=utf-8")
+
+    def _body(self) -> dict:
+        length = int(self.headers.get("Content-Length", "0"))
+        if not length:
+            return {}
+        return json.loads(self.rfile.read(length).decode("utf-8"))
+
+    def _static(self, name: str) -> None:
+        path = os.path.join(STATIC, os.path.basename(name))
+        if not os.path.isfile(path):
+            return self._json({"error": "not found"}, 404)
+        kinds = {".html": "text/html; charset=utf-8",
+                 ".js": "text/javascript; charset=utf-8",
+                 ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml"}
+        with open(path, "rb") as fh:
+            self._send(200, fh.read(),
+                       kinds.get(os.path.splitext(path)[1], "application/octet-stream"))
+
+    def _download(self, name: str, body: bytes, content_type: str) -> None:
+        self._send(200, body, content_type,
+                   {"Content-Disposition": f'attachment; filename="{name}"'})
+
+    # --------------------------------------------------------------------- GET
+    def do_GET(self) -> None:
+        parsed = urlparse(self.path)
+        route, query = parsed.path, parse_qs(parsed.query)
+        try:
+            if route in ("/", "/index.html"):
+                return self._static("index.html")
+            if route.startswith("/static/"):
+                return self._static(route)
+            if route == "/favicon.ico":
+                return self._send(200, _FAVICON, "image/svg+xml")
+            if route == "/api/meta":
+                return self._json(SESSION.meta())
+            if route == "/api/state":
+                return self._json(SESSION.state())
+            if route == "/api/heights":
+                return self._json(SESSION.heights_payload())
+            if route == "/api/plot":
+                target = query.get("target", ["analysis"])[0]
+                kind = query.get("kind", ["section"])[0]
+                return self._send(200, SESSION.plot(target, kind), "image/png")
+            self._json({"error": "not found"}, 404)
+        except Exception as exc:
+            self._json({"error": f"{exc}"}, 400)
+
+    # -------------------------------------------------------------------- POST
+    def do_POST(self) -> None:
+        route = urlparse(self.path).path
+        try:
+            data = self._body()
+            if route == "/api/language":
+                SESSION.set_language(str(data.get("lang", "en")))
+                return self._json(SESSION.meta())
+            if route == "/api/theme":
+                return self._json({"theme": SESSION.set_theme(str(data.get("theme", "light")))})
+            if route == "/api/analyse":
+                return self._json(SESSION.analyse(data.get("values", {})))
+            if route == "/api/layout":
+                return self._json(SESSION.generate(data.get("values", {})))
+            if route == "/api/heights":
+                return self._json(SESSION.start_heights(data.get("values", {})))
+            if route == "/api/cancel":
+                return self._json(SESSION.cancel())
+            if route == "/api/project":
+                return self._project(data)
+            if route == "/api/load":
+                return self._json(SESSION.load_project(data.get("project", {})))
+            if route == "/api/report":
+                return self._report(data)
+            if route == "/api/export-heights":
+                return self._export_heights(data)
+            self._json({"error": "not found"}, 404)
+        except Exception as exc:
+            self._json({"error": f"{exc}"}, 400)
+
+    # ----------------------------------------------------------------- actions
+    def _project(self, data: dict) -> None:
+        """The inputs as a downloadable project file."""
+        payload = json.dumps(SESSION.project_file(data.get("values", {})),
+                             indent=2, ensure_ascii=False).encode("utf-8")
+        self._download("project.msew", payload, "application/json; charset=utf-8")
+
+    def _report(self, data: dict) -> None:
+        """Writes the report to a temporary file and sends it as a download."""
+        fmt = str(data.get("format", "pdf")).lower()
+        if fmt not in REPORT_TYPES:
+            return self._json({"error": f"unknown report format: {fmt}"}, 400)
+        name = f"lythosmsew_report.{fmt}"
+        with tempfile.TemporaryDirectory() as tmp:
+            path = SESSION.report(fmt, os.path.join(tmp, name))
+            with open(path, "rb") as fh:
+                body = fh.read()
+        self._download(name, body, REPORT_TYPES[fmt])
+
+    def _export_heights(self, data: dict) -> None:
+        """The height study table as CSV or XLSX."""
+        kind = str(data.get("format", "csv")).lower()
+        if kind not in EXPORT_TYPES:
+            return self._json({"error": f"unknown export format: {kind}"}, 400)
+        name = f"lythosmsew_heights.{kind}"
+        with tempfile.TemporaryDirectory() as tmp:
+            path = SESSION.export_heights(kind, os.path.join(tmp, name))
+            with open(path, "rb") as fh:
+                body = fh.read()
+        self._download(name, body, EXPORT_TYPES[kind])
+
+
+def _clean(payload):
+    """NaN and infinity replaced by None, so the browser's JSON parser accepts them."""
+    if isinstance(payload, float):
+        return payload if math.isfinite(payload) else None
+    if isinstance(payload, dict):
+        return {k: _clean(v) for k, v in payload.items()}
+    if isinstance(payload, (list, tuple)):
+        return [_clean(v) for v in payload]
+    return payload
+
+
+def serve(host: str = "127.0.0.1", port: int = 8782, open_browser: bool = True,
+          lang: str = "en") -> None:
+    """Starts the interface and serves it until Ctrl+C."""
+    SESSION.set_language(lang)
+    server = ThreadingHTTPServer((host, port), Handler)
+    url = f"http://{host}:{port}/"
+    strings = shell_strings(SESSION.lang)
+    print(f"{APP_NAME} {__version__} — {url}")
+    print(strings["stop_hint"])
+    if open_browser:
+        threading.Timer(0.8, lambda: webbrowser.open(url)).start()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\n" + strings["stopped"])
+    finally:
+        server.server_close()

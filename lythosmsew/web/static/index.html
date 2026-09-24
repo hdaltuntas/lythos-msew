@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lythos MSEW</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header>
+  <h1>Lythos MSEW <span id="tagline"></span></h1>
+  <div class="spacer"></div>
+  <label class="inline"><span id="lblLanguage"></span>
+    <select id="language"></select>
+  </label>
+  <button id="btnOpen"></button>
+  <button id="btnSave"></button>
+  <label class="inline"><span id="lblReport"></span>
+    <select id="reportFormat"></select>
+  </label>
+  <button id="btnReport"></button>
+  <button id="btnTheme" class="icon" title="">◐</button>
+  <input type="file" id="fileInput" accept=".msew,.json" hidden>
+</header>
+
+<nav class="modules">
+  <button data-module="inputs" class="active" id="tabInputs"></button>
+  <button data-module="heights" id="tabHeights"></button>
+</nav>
+
+<main>
+  <!-- ------------------------------------------------------- left: inputs -->
+  <aside class="left">
+    <section id="paneInputs">
+      <div class="actions">
+        <button id="btnAnalyse" class="primary"></button>
+      </div>
+      <div id="projectForm"></div>
+      <div id="wallForm"></div>
+
+      <h2 id="lblTypes"></h2>
+      <div class="table-wrap">
+        <table class="grid" id="typesTable">
+          <thead><tr id="typesHead"></tr></thead>
+          <tbody id="typesBody"></tbody>
+        </table>
+      </div>
+      <div class="row">
+        <button data-table="types" class="add"></button>
+        <button data-table="types" class="del"></button>
+      </div>
+      <div class="note table-note" id="typesNote"></div>
+
+      <h2 id="lblLayers"></h2>
+      <div class="table-wrap">
+        <table class="grid" id="layersTable">
+          <thead><tr id="layersHead"></tr></thead>
+          <tbody id="layersBody"></tbody>
+        </table>
+      </div>
+      <div class="row">
+        <button data-table="layers" class="add"></button>
+        <button data-table="layers" class="del"></button>
+      </div>
+      <div class="note table-note" id="layersNote"></div>
+
+      <div id="layoutForm"></div>
+      <div class="row">
+        <button id="btnGenerate"></button>
+      </div>
+
+      <div id="optionsForm"></div>
+    </section>
+
+    <section id="paneHeights" hidden>
+      <div class="actions">
+        <button id="btnHeights" class="primary"></button>
+        <button id="btnCancel"></button>
+        <button id="btnCsv"></button>
+        <button id="btnXlsx"></button>
+      </div>
+      <div id="heightsForm"></div>
+      <div id="layoutForm2"></div>
+    </section>
+  </aside>
+
+  <!-- ------------------------------------------------------ right: results -->
+  <div class="results">
+    <div class="tabs" id="viewTabs"></div>
+    <div class="picker" id="picker" hidden>
+      <label class="inline"><span id="lblFigure"></span>
+        <select id="figure"></select>
+      </label>
+    </div>
+    <div class="view" id="view"></div>
+  </div>
+</main>
+
+<div id="statusBar">
+  <span class="msg" id="statusMsg"></span>
+  <div class="bar"><div id="progressBar"></div></div>
+  <span id="statusRight"></span>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
