@@ -43,6 +43,11 @@ ENTRIES = {
                          "factors of at least 1 and a coverage ratio above 0.",
                          "'{name}' donatısı: geosentetik için Tult > 0, en az 1 olan azaltma "
                          "katsayıları ve sıfırdan büyük kaplama oranı gerekir."),
+    "err_polymer_strip": ("Reinforcement '{name}': a polymer strip needs Tult per strip, "
+                          "reduction factors of at least 1, its width and its horizontal "
+                          "spacing.",
+                          "'{name}' donatısı: polimer şerit için şerit başına Tult, en az 1 "
+                          "olan azaltma katsayıları, genişlik ve yatay aralık gerekir."),
     "err_strip": ("Reinforcement '{name}': a steel strip needs its width, thickness, yield "
                   "strength and horizontal spacing.",
                   "'{name}' donatısı: çelik şerit için genişlik, kalınlık, akma dayanımı ve "
@@ -116,6 +121,14 @@ ENTRIES = {
 
     # ------------------------------------------------------------------ choice labels
     "kind_strip": ("Steel strip", "Çelik şerit"),
+    "kind_polymer_strip": ("Polymer strip", "Polimer şerit"),
+    "family_steel_ha": ("Ribbed steel strips (HA, galvanised)",
+                        "Nervürlü çelik şeritler (HA, galvanizli)"),
+    "family_polymer": ("Polymer strips (PET core, PE sheath)",
+                       "Polimer şeritler (PET çekirdek, PE kılıf)"),
+    "family_geogrid_hdpe": ("Uniaxial HDPE geogrids", "Tek eksenli HDPE geogridler"),
+    "family_geogrid_pet": ("PET geogrids", "PET geogridler"),
+    "family_geotextile": ("Woven geotextiles", "Dokuma geotekstiller"),
     "kind_geogrid": ("Geogrid", "Geogrid"),
     "kind_geotextile": ("Geotextile", "Geotekstil"),
     "design_asd": ("ASD — factors of safety (FHWA-NHI-00-043)",
@@ -280,12 +293,14 @@ ENTRIES = {
     "col_z": ("z m", "z m"),
     "col_L": ("L m", "L m"),
     "col_type": ("Type", "Tür"),
-    "types_note": ("Geosynthetics: Tult, the reduction factors, Rc and Ci. Steel strips: b, t, "
-                   "Fy, the horizontal spacing Sh and F*₀ at the top. CR is the connection "
-                   "strength as a share of the long-term strength.",
-                   "Geosentetik: Tult, azaltma katsayıları, Rc ve Ci. Çelik şerit: b, t, Fy, "
-                   "yatay aralık Sh ve tepedeki F*₀. CR, bağlantı dayanımının uzun süreli "
-                   "dayanıma oranıdır."),
+    "types_note": ("Geogrids and geotextiles: Tult [kN/m], the reduction factors, Rc and Ci. "
+                   "Steel strips: b, t, Fy, the horizontal spacing Sh and F*₀ at the top. "
+                   "Polymer strips: Tult per strip [kN], the reduction factors, b, Sh and Ci. "
+                   "CR is the connection strength as a share of the long-term strength.",
+                   "Geogrid ve geotekstil: Tult [kN/m], azaltma katsayıları, Rc ve Ci. Çelik "
+                   "şerit: b, t, Fy, yatay aralık Sh ve tepedeki F*₀. Polimer şerit: şerit "
+                   "başına Tult [kN], azaltma katsayıları, b, Sh ve Ci. CR, bağlantı "
+                   "dayanımının uzun süreli dayanıma oranıdır."),
     "layers_note": ("z is the height above the levelling pad, L the length from the face.",
                     "z, tesviye tabanından yükseklik; L, yüzden ölçülen boydur."),
 

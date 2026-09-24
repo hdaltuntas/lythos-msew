@@ -196,7 +196,11 @@ class MSEWall:
         for t in self.types.values():
             if t["kind"] not in KINDS:
                 raise MSEWError("err_kind", name=t["name"])
-            if R.is_extensible(t["kind"]):
+            if t["kind"] == "polymer_strip":
+                if (t["Tult"] <= 0 or min(t["RFID"], t["RFCR"], t["RFD"]) < 1.0
+                        or min(t["b"], t["Sh"]) <= 0):
+                    raise MSEWError("err_polymer_strip", name=t["name"])
+            elif R.is_extensible(t["kind"]):
                 if t["Tult"] <= 0 or min(t["RFID"], t["RFCR"], t["RFD"]) < 1.0 or t["Rc"] <= 0:
                     raise MSEWError("err_geosynthetic", name=t["name"])
             elif min(t["b"], t["t"], t["Fy"], t["Sh"]) <= 0:
@@ -338,7 +342,7 @@ class MSEWall:
         options = {"reinforced": V * _tan(self.rf["phi"]),
                    "foundation": V * _tan(self.fd["phi"]) + self.fd["c"] * L}
         bottom = self.types[self.layers[0]["type"]]
-        if R.is_extensible(bottom["kind"]):
+        if R.is_sheet(bottom["kind"]):
             options["interface"] = V * self.Cds * _tan(self.rf["phi"])
         plane = min(options, key=options.get)
         return {"R": options[plane], "plane": plane, "options": options}
@@ -497,7 +501,7 @@ class MSEWall:
             # sliding of the block above along this layer
             above = self.H - z
             forces = self._forces(above, layer["L"], self._factors("sliding"))
-            mu = (self.Cds if geo else 1.0) * _tan(self.rf["phi"])
+            mu = (self.Cds if R.is_sheet(kind) else 1.0) * _tan(self.rf["phi"])
             resist = forces["V"] * mu
             phi_s = crit["phi_sliding"] if lrfd else 1.0
             slide_req = 1.0 if lrfd else crit["FS_sliding"]

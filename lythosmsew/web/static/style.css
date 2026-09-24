@@ -316,3 +316,9 @@ table.grid td.name input { min-width: 104px; text-align: left; }
 .verdict.bad { color: var(--bad); }
 .view h2:first-child { margin-top: 0; }
 .view .table-wrap + h2, .view table.data + h2 { margin-top: 18px; }
+
+/* The catalogue picker above the type table */
+.catalog { display: flex; gap: 6px; align-items: center; margin: 2px 0 2px; }
+.catalog .inline { flex: 1; min-width: 0; }
+.catalog select { flex: 1; min-width: 0; width: 100%; }
+table.grid td.kind select { min-width: 118px; text-align: left; }

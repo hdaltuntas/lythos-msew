@@ -89,9 +89,16 @@ Arayüz varsayılan olarak 8782 numaralı portu dinler.
   uzaklık, kalıcı ya da hareketli).
 * **Zeminler:** donatılı dolgu (γ, φ′), arka dolgu (γ, φ′), temel zemini (γ, γdoy, φ′, c′ — ya da
   φ = 0 ve cu), su tablasının tabandan derinliği.
-* **Donatı türleri** (tablo): ad, tür (çelik şerit, geogrid, geotekstil); geosentetik — Tult,
+* **Donatı kataloğu:** piyasadaki tipik ürünler tek tıkla tür tablosuna eklenir — nervürlü
+  galvanizli çelik şeritler (S355'te HA 40×4 – 60×5, Grade 65'te 50×4), polimer şeritler (PET
+  çekirdek, PE kılıf, şerit başına 20–100 kN), tek eksenli HDPE ve PET geogridler (35–200 kN/m),
+  dokuma PET ve PP geotekstiller — FHWA'nın tipik azaltma katsayıları ve sıyrılma
+  parametreleriyle. Genel başlangıç değerleridir: kullanılacak ürünün teknik föyüyle kontrol
+  ediniz.
+* **Donatı türleri** (tablo): ad, tür (çelik şerit, polimer şerit, geogrid, geotekstil); geosentetik — Tult,
   RFID, RFCR, RFD, kaplama oranı Rc, etkileşim katsayısı Ci; çelik şerit — genişlik b, kalınlık
-  t, akma Fy, yatay aralık Sh, tepede F*₀; her ikisi — ölçek düzeltmesi α ve bağlantı oranı CR.
+  t, akma Fy, yatay aralık Sh, tepede F*₀; polimer şerit — şerit başına Tult, azaltma
+  katsayıları, genişlik b, aralık Sh, Ci; hepsi — ölçek düzeltmesi α ve bağlantı oranı CR.
 * **Tabakalar** (tablo): tesviye tabanından yükseklik z, boy L, tür. Ya da **yerleşim üreteci**
   doldursun: ilk tabaka, aralık Sv, L = oran·H (en kısa boyun altına inmeden) ya da sabit L, tür.
 * **Korozyon:** tasarım ömrü, galvaniz kalınlığı, karbon çeliği kayıp hızı.

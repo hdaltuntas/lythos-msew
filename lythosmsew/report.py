@@ -383,7 +383,12 @@ def build_html(wall, lang: str, figures: Dict[str, bytes], img_src=None, heights
         if name not in used:
             continue
         st = R.strength(t, w.corrosion)
-        if R.is_extensible(t["kind"]):
+        if t["kind"] == "polymer_strip":
+            detail = (f"Tult = {_f(t['Tult'], 1)} kN/strip, b = {_f(t['b'], 0)} mm, "
+                      f"Sh = {_f(t['Sh'])} m, RF = {_f(t['RFID'])}·{_f(t['RFCR'])}·"
+                      f"{_f(t['RFD'])}, Ci = {_f(t['Ci'])}, α = {_f(t['alpha'])}, "
+                      f"CR = {_f(t['CR'])}")
+        elif R.is_extensible(t["kind"]):
             detail = (f"Tult = {_f(t['Tult'], 1)} kN/m, RF = {_f(t['RFID'])}·{_f(t['RFCR'])}·"
                       f"{_f(t['RFD'])}, Ci = {_f(t['Ci'])}, α = {_f(t['alpha'])}, "
                       f"CR = {_f(t['CR'])}")

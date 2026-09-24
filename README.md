@@ -96,9 +96,15 @@ browser can be re-run unattended. The interface listens on port 8782 by default.
   offset from the face, permanent or live).
 * **Soils:** the reinforced fill (γ, φ′), the retained fill (γ, φ′), the foundation soil
   (γ, γsat, φ′, c′ — or φ = 0 and cu), the water table below the base.
-* **Reinforcement types** (a table): name, kind (steel strip, geogrid, geotextile);
+* **Reinforcement catalogue:** typical market products added to the type table in one click —
+  ribbed galvanised steel strips (HA 40×4 to 60×5 in S355, 50×4 in Grade 65), polymer strips
+  (PET core, PE sheath, 20–100 kN per strip), uniaxial HDPE and PET geogrids (35–200 kN/m),
+  woven PET and PP geotextiles — with FHWA's typical reduction factors and pullout parameters.
+  Generic starting values: check them against the datasheet of the product specified.
+* **Reinforcement types** (a table): name, kind (steel strip, polymer strip, geogrid, geotextile);
   geosynthetics — Tult, RFID, RFCR, RFD, coverage Rc, interaction Ci; steel strips — width b,
-  thickness t, yield Fy, horizontal spacing Sh, F*₀ at the top; both — scale correction α and
+  thickness t, yield Fy, horizontal spacing Sh, F*₀ at the top; polymer strips — Tult per
+  strip, the reduction factors, width b, spacing Sh, Ci; all — scale correction α and
   connection strength ratio CR.
 * **Layers** (a table): height above the levelling pad z, length L, type. Or let the **layout
   generator** fill it: first layer, spacing Sv, L = ratio·H (never below a shortest length) or
@@ -159,6 +165,7 @@ keep their defaults.
 |---|---|
 | `lythosmsew/earth.py` | Coulomb, Rankine, Mononobe–Okabe, Am |
 | `lythosmsew/reinforcement.py` | Corrosion, long-term strength, Kr/Ka, F*, pullout |
+| `lythosmsew/catalog.py` | Typical market reinforcement: steel and polymer strips, geogrids, geotextiles |
 | `lythosmsew/factors.py`, `capacity.py` | Bearing capacity factors and the general equation (from Lythos Bearing) |
 | `lythosmsew/engine.py` | The wall: forces, external checks, bearing, internal checks, earthquake, required length, layout generator |
 | `lythosmsew/heights.py`, `height_plots.py` | The height study, its figures, CSV / XLSX |

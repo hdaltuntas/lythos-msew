@@ -10,15 +10,20 @@ from . import APP_NAME
 from . import __version__ as APP_VERSION
 
 __all__ = ["APP_NAME", "APP_VERSION", "DEFAULT_CONFIG", "THEMES", "PLOT_PALETTE",
-           "SOIL_FILL", "KIND_COLORS", "METHOD_COLORS", "KINDS", "GEOSYNTHETICS",
+           "SOIL_FILL", "KIND_COLORS", "METHOD_COLORS", "KINDS", "GEOSYNTHETICS", "SHEETS",
            "DESIGNS", "BEARING_METHODS", "LAYOUT_RULES", "ACCENT"]
 
 # --- Choice lists (the first entry is the default where one is needed) -----
-#: Reinforcement kinds: two extensible geosynthetics and the inextensible
-#: steel strip. The kind decides the coefficient of lateral earth pressure, the
+#: Reinforcement kinds: the inextensible steel strip, and three extensible
+#: geosynthetics — the polymer strip (a polyester core in a polyethylene
+#: sheath, placed and spaced like a steel strip), the geogrid and the
+#: geotextile. The kind decides the coefficient of lateral earth pressure, the
 #: shape of the failure surface, the strength and the pullout parameters.
-KINDS = ["strip", "geogrid", "geotextile"]
-GEOSYNTHETICS = ("geogrid", "geotextile")
+KINDS = ["strip", "polymer_strip", "geogrid", "geotextile"]
+GEOSYNTHETICS = ("polymer_strip", "geogrid", "geotextile")
+
+#: The geosynthetics laid as continuous sheets, along which the fill can slide
+SHEETS = ("geogrid", "geotextile")
 
 #: Allowable stress design (factors of safety) or load and resistance factors
 DESIGNS = ["asd", "lrfd"]
@@ -55,7 +60,8 @@ PLOT_PALETTE = dict(
 )
 
 #: One colour per reinforcement kind, so a layer keeps its colour everywhere.
-KIND_COLORS = {"strip": "#5B6770", "geogrid": "#C6613F", "geotextile": "#4E9A8A"}
+KIND_COLORS = {"strip": "#5B6770", "polymer_strip": "#8C6BB1", "geogrid": "#C6613F",
+               "geotextile": "#4E9A8A"}
 
 #: One colour per bearing capacity method.
 METHOD_COLORS = {"terzaghi": "#5B8DB8", "meyerhof": "#8C6BB1", "hansen": "#D9A55B",

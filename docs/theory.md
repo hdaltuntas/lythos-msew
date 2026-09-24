@@ -110,7 +110,10 @@ Kr/Ka is 1 for geosynthetics; for steel strips it falls linearly from 1.7 at the
 **Tensile strength.** Per metre of wall:
 
 * a geosynthetic: T_al = Tult / (RFID·RFCR·RFD), times its coverage ratio Rc;
-* a steel strip: Fy·b·Ec per strip, divided by the horizontal spacing Sh (Rc = b/Sh).
+* a steel strip: Fy·b·Ec per strip, divided by the horizontal spacing Sh (Rc = b/Sh);
+* a polymer strip: Tult / (RFID·RFCR·RFD) per strip, divided by Sh (Rc = b/Sh). It is
+  extensible (Kr/Ka = 1, Rankine's active zone) but, not being a continuous sheet, offers no
+  sliding plane of its own.
 
 The strip's thickness after corrosion is Ec = t − Es, with the galvanising lasting
 2 + (zinc − 30)/4 years (15 µm/yr for 2 years, then 4 µm/yr) and the carbon steel then lost at

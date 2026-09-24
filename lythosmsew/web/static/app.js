@@ -221,8 +221,7 @@ const TABLES = {
 /* Columns that mean nothing for a row's kind are greyed out. */
 function offColumns(name, row) {
   if (name !== "types") return [];
-  const schema = S.meta.schema.types;
-  return row.kind === "strip" ? schema.geo_only : schema.steel_only;
+  return S.meta.schema.types.off_columns[row.kind] || [];
 }
 
 function renderTable(name) {
@@ -294,7 +293,7 @@ function renderTable(name) {
       }
       const grey = off.includes(column.key);
       input.disabled = grey;
-      tr.append(el("td", { class: (grey ? "off " : "") + (column.key === "name" ? "name" : "") },
+      tr.append(el("td", { class: (grey ? "off " : "") + (["name", "kind"].includes(column.key) ? column.key : "") },
         input));
     }
     body.append(tr);
@@ -313,6 +312,35 @@ function blankRow(name) {
   const previous = rows.length > 1 ? rows[rows.length - 2] : null;
   const step = previous ? last.z - previous.z : 0.6;
   return { ...last, z: Math.round((last.z + step) * 1000) / 1000 };
+}
+
+/* The catalogue of market products, grouped by family, for the type table. */
+function renderCatalog() {
+  const select = $("catalog");
+  const previous = select.value;
+  select.replaceChildren(...S.meta.schema.types.catalog.map((family) =>
+    el("optgroup", { label: family.label }, ...family.entries.map((row) =>
+      el("option", { value: row.name, text: row.name })))));
+  if (previous) select.value = previous;
+}
+
+function addFromCatalog() {
+  const name = $("catalog").value;
+  let row = null;
+  for (const family of S.meta.schema.types.catalog) {
+    row = row || family.entries.find((entry) => entry.name === name);
+  }
+  if (!row) return;
+  const rows = S.values.reinforcement_types || (S.values.reinforcement_types = []);
+  const taken = new Set(typeNames());
+  const copy = { ...row };
+  for (let i = 2; taken.has(copy.name); i += 1) copy.name = `${row.name} (${i})`;
+  rows.push(copy);
+  S.selected.types = rows.length - 1;
+  renderTable("types");
+  renderTable("layers");
+  renderForms();
+  status(`${T("catalog_added")}: ${copy.name}`);
 }
 
 function addRow(name) {
@@ -594,6 +622,9 @@ function applyMeta(meta) {
   $("lblLayers").textContent = T("layers_group");
   $("layersNote").textContent = T("layers_note");
   $("btnGenerate").textContent = T("generate");
+  $("lblCatalog").textContent = T("catalog");
+  $("btnCatalog").textContent = T("catalog_add");
+  $("catalogNote").textContent = T("catalog_note");
   $("btnAnalyse").textContent = T("run_analysis_button");
   $("btnHeights").textContent = T("hs_run");
   $("btnCancel").textContent = T("cancel");
@@ -615,6 +646,7 @@ function applyMeta(meta) {
   report.value = previous || "pdf";
 
   renderForms();
+  renderCatalog();
   renderTable("types");
   renderTable("layers");
   renderTabs();
@@ -706,6 +738,7 @@ async function start() {
   $("btnReport").addEventListener("click", downloadReport);
   $("btnAnalyse").addEventListener("click", runAnalysis);
   $("btnGenerate").addEventListener("click", generateLayers);
+  $("btnCatalog").addEventListener("click", addFromCatalog);
   $("btnHeights").addEventListener("click", runHeights);
   $("btnCancel").addEventListener("click", cancelHeights);
   $("btnCsv").addEventListener("click", () => exportHeights("csv"));

@@ -11,11 +11,12 @@ one a layer belongs to:
                    and below), the failure surface is the bilinear
                    "coherent gravity" line, and the strength is the steel
                    section left after corrosion over the design life.
-    extensible     geogrids and geotextiles. The fill reaches the active
+    extensible     polymer strips, geogrids and geotextiles. The fill reaches the active
                    state (Kr/Ka = 1), the failure surface is Rankine's plane,
                    and the long-term strength is the ultimate strength
                    divided by the installation damage, creep and durability
-                   reduction factors.
+                   reduction factors. A polymer strip's Tult is per strip,
+                   and it is spaced like a steel strip.
 
 Every strength is returned per metre of wall, so a steel strip's strength is
 already divided by its horizontal spacing and a geosynthetic's already
@@ -32,11 +33,11 @@ from __future__ import annotations
 import math
 from typing import Dict
 
-from .config import GEOSYNTHETICS
+from .config import GEOSYNTHETICS, SHEETS
 
 __all__ = ["ZINC_FIRST_RATE", "ZINC_LATER_RATE", "PULLOUT_C", "zinc_life",
            "sacrificial_thickness", "strength", "kr_ratio", "f_star", "pullout",
-           "is_extensible"]
+           "is_extensible", "is_sheet"]
 
 #: Zinc loss for the first two years, and after them [µm/yr]
 ZINC_FIRST_RATE = 15.0
@@ -52,6 +53,11 @@ TRANSITION_DEPTH = 6.0
 
 def is_extensible(kind: str) -> bool:
     return kind in GEOSYNTHETICS
+
+
+def is_sheet(kind: str) -> bool:
+    """A geogrid or a geotextile: a continuous plane the fill can slide along."""
+    return kind in SHEETS
 
 
 def zinc_life(zinc: float) -> float:
@@ -82,6 +88,14 @@ def strength(rtype: dict, corrosion: dict) -> Dict[str, float]:
         the sacrificial thickness Es.
     """
     kind = rtype["kind"]
+    if kind == "polymer_strip":
+        # Tult per strip; b/Sh of the plan is covered
+        sh = rtype["Sh"]
+        t_al = rtype["Tult"] / (rtype["RFID"] * rtype["RFCR"] * rtype["RFD"])
+        return {"T_lt": t_al / sh, "T_dyn": rtype["Tult"] / (rtype["RFID"] * rtype["RFD"]) / sh,
+                "T_al": t_al, "Rc": rtype["b"] / 1000.0 / sh,
+                "RF": rtype["RFID"] * rtype["RFCR"] * rtype["RFD"], "Ec": 0.0, "Ac": 0.0,
+                "Es": 0.0}
     if is_extensible(kind):
         rf = rtype["RFID"] * rtype["RFCR"] * rtype["RFD"]
         rc = rtype["Rc"]

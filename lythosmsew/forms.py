@@ -26,6 +26,7 @@ import copy
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional
 
+from . import catalog
 from .config import BEARING_METHODS, DEFAULT_CONFIG, DESIGNS, KINDS, LAYOUT_RULES
 from .i18n import TRANSLATIONS
 
@@ -270,9 +271,13 @@ def height_groups(lang: str = "en") -> List[Group]:
 TYPE_NUMBERS = ["Tult", "RFID", "RFCR", "RFD", "Rc", "b", "t", "Fy", "Sh", "Ci", "F0",
                 "alpha", "CR"]
 
-#: Columns that mean nothing for one family, which the table greys out
-GEO_ONLY = ["Tult", "RFID", "RFCR", "RFD", "Rc", "Ci"]
-STEEL_ONLY = ["b", "t", "Fy", "Sh", "F0"]
+#: Columns that mean nothing for a kind, which the table greys out
+OFF_COLUMNS = {
+    "strip": ["Tult", "RFID", "RFCR", "RFD", "Rc", "Ci"],
+    "polymer_strip": ["Rc", "t", "Fy", "F0"],
+    "geogrid": ["b", "t", "Fy", "Sh", "F0"],
+    "geotextile": ["b", "t", "Fy", "Sh", "F0"],
+}
 
 
 def type_columns(lang: str = "en") -> List[dict]:
@@ -313,7 +318,8 @@ def schema(lang: str = "en") -> dict:
         "heights": {"groups": [g.to_dict() for g in height_groups(lang)]},
         "types": {"columns": type_columns(lang), "rows": default_types(),
                   "note": _t(lang, "types_note"),
-                  "geo_only": list(GEO_ONLY), "steel_only": list(STEEL_ONLY)},
+                  "off_columns": {k: list(v) for k, v in OFF_COLUMNS.items()},
+                  "catalog": catalog.catalog(TRANSLATIONS.get(lang, TRANSLATIONS["en"]))},
         "layers": {"columns": layer_columns(lang), "rows": default_layers(),
                    "note": _t(lang, "layers_note")},
     }
@@ -371,7 +377,8 @@ def read_types(values: dict) -> List[dict]:
             continue
         seen.add(name)
         kind = _s(row, "kind", "strip", KINDS)
-        base = next(t for t in DEFAULT_CONFIG["reinforcement_types"] if t["kind"] == kind)
+        base = next((t for t in DEFAULT_CONFIG["reinforcement_types"] if t["kind"] == kind),
+                    catalog.CATALOG["polymer"][0])
         rtype = {"name": name, "kind": kind}
         for key in TYPE_NUMBERS:
             rtype[key] = _f(row, key, base[key])

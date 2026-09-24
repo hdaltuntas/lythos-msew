@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- A catalogue of typical market reinforcement, added to the type table in one click: ribbed
+  galvanised steel strips (HA 40×4, 40×5, 45×5, 50×4, 50×5, 60×4, 60×5 in S355; 50×4 in
+  Grade 65), polymer strips (20–100 kN per strip), uniaxial HDPE geogrids, PET geogrids, woven
+  PET and PP geotextiles, with FHWA's typical factors.
+- A fourth reinforcement kind, the polymer strip: extensible, strength per strip over its
+  spacing, no sliding plane.
+
 ## 0.1.0
 
 First release: mechanically stabilised earth walls, built on the architecture of the other
