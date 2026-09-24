@@ -394,15 +394,15 @@ def ask_in_shell():
 
 
 def get_token():
-    """Finds the token, or asks for it. Returns (token, is new)."""
+    """Finds the token, or asks for it. Returns (token, is new, where it came from)."""
     variable, token = token_from_environment()
     if token:
         print(f"Using the token in the environment variable {variable}.\n")
-        return token, False
+        return token, False, f"the environment variable {variable}"
     token = stored_token()
     if token:
         print(f"Using the token in {PYPIRC}.\n")
-        return token, False
+        return token, False, PYPIRC
 
     print(f"An API token is needed. Get one at {TOKEN_PAGE}.")
     print("  · it starts with 'pypi-' and is shown only once")
@@ -423,7 +423,7 @@ def get_token():
         if not yes("Use it anyway?"):
             stop("Stopped. Nothing was sent.")
     print("Token received.")
-    return token, True
+    return token, True, "pasted"
 
 
 def offer_to_save(token):
@@ -447,7 +447,7 @@ def offer_to_save(token):
     print(f"Saved to {PYPIRC}.")
 
 
-def explain_failure(name):
+def explain_failure(name, source):
     """If the upload fails, says what the likeliest reasons are."""
     print("\n" + "-" * 62)
     print("The upload was refused. The usual reasons:")
@@ -461,8 +461,14 @@ def explain_failure(name):
     print("  400 File already exists — this version is published already. Raise")
     print("     the version in pyproject.toml and build again.")
     print()
-    print(f"  A saved token lives in {PYPIRC}; if it is the wrong one, delete it")
-    print("     there and this script will ask again.")
+    print("  Read twine's own message above the line: it names the reason.")
+    print()
+    if source == "pasted":
+        print("  The token used was the one pasted in: make a new one scoped to the")
+        print("     entire account and run this again.")
+    else:
+        print(f"  The token used came from {source}; if it is the wrong one, remove")
+        print("     it there and this script will ask for one.")
     print("-" * 62)
 
 
@@ -500,7 +506,7 @@ def main():
     if not yes("Upload now?"):
         stop("Stopped. Nothing was sent.")
 
-    token, is_new = get_token()
+    token, is_new, source = get_token()
 
     environment = dict(os.environ)
     environment["TWINE_USERNAME"] = "__token__"
@@ -512,7 +518,7 @@ def main():
     print("\nUploading ...\n")
     result = subprocess.run([tool("twine"), "upload", *files], env=environment)
     if result.returncode != 0:
-        explain_failure(name)
+        explain_failure(name, source)
         stop(f"The upload failed (exit code {result.returncode}).")
 
     print(f"\nDone. {SITE}/project/{name}/{version}/")
