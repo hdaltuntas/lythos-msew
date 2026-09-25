@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Mechanically stabilised earth walls: external stability (sliding, overturning, eccentricity, bearing capacity by Terzaghi, Meyerhof, Hansen, Vesić and EN 1997-1), internal stability of steel strip and geosynthetic reinforcement (tensile, pullout, connection, sliding), corrosion and reduction factors, pseudo-static earthquake, ASD or LRFD, the required reinforcement length and a study over the wall height, with PDF reporting."
 readme = "README.md"
 requires-python = ">=3.10"
-license = "MIT"
+license = "AGPL-3.0-only"
 license-files = ["LICENSE"]
 authors = [{ name = "Hasan Deniz Altuntaş", email = "lythosfea@gmail.com" }]
 keywords = [
