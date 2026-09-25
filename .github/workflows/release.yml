@@ -1,0 +1,48 @@
+name: Release
+
+# Run by hand from the Actions tab: builds the distribution, checks that the
+# version asked for is the one in pyproject.toml, and publishes a GitHub
+# release tagged v<version> with the wheel and the source archive attached.
+# The notes come from docs/releases/v<version>.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (the one in pyproject.toml)"
+        required: true
+        default: "0.1.0"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: The version must be the package's
+        run: |
+          declared=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          test "$declared" = "${{ inputs.version }}" || { echo "pyproject.toml says $declared"; exit 1; }
+          test -s "docs/releases/v${{ inputs.version }}.md" || { echo "no release notes"; exit 1; }
+
+      - name: Build and check the distribution
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+          twine check dist/*
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${{ inputs.version }}" dist/* \
+            --target "${{ github.sha }}" \
+            --title "Lythos MSEW ${{ inputs.version }}" \
+            --notes-file "docs/releases/v${{ inputs.version }}.md"
